@@ -11,6 +11,9 @@ app.get('/', (req, res) => { // handle the response from the callback from the g
   res.send('<h1>Hey Folks</h1>')
 })
 
+app.get('/urls.json', (req, res) => {
+  res.json(urlDatabase) // sends our existing object as a json file format
+})
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port: ${PORT}`);
