@@ -9,29 +9,22 @@ const urlDatabase = {
 
 app.set('view engine', 'ejs');
 
-// Index page
-app.get('/', (req, res) => { // handles the response with a callback of the get method of the app obj // first arg is the page requested -> url/PATH -> '/' is the root of path
+// URLs index page
+app.get('/urls', (req, res) => { // handles the response with a callback of the get method of the app obj // first arg is the page requested -> url/PATH -> '/' is the root of path
 
-  const mascots = [
-    { name: 'Sammy', organization: "DigitalOcean", birthYear: 2012},
-    { name: 'Tux', organization: "Linux", birthYear: 1996},
-    { name: 'Moby Dock', organization: "Docker", birthYear: 2013}
-  ];
-  const tagline = "No programming concept is complete without a cute animal mascot.";
-
+  
   // views, pass variables
-  res.render('pages/index', {
-    mascots: mascots,
-    tagline: tagline
+  res.render('urls_index', {
+    urls: urlDatabase
   });
 });
 
 //about page
-app.get('/about', (req, res) => {
-  res.render("pages/about"); // views
-});
+// app.get('/about', (req, res) => {
+//   res.render("pages/about"); // views
+// });
 
-// API req -> JSON res
+// API route handler -> JSON res
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase); // sends our existing object as a json file format // which can then be parsed by the client
 });
