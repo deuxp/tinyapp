@@ -12,9 +12,14 @@ app.get('/', (req, res) => { // handle the response from the callback from the g
 })
 
 app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase) // sends our existing object as a json file format
+  res.json(urlDatabase) // sends our existing object as a json file format // which can then be parsed by the client
+})
+
+app.get('/hello', (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n") // $ curl -i // will show the whold thing + the header information
 })
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port: ${PORT}`);
 })
+
