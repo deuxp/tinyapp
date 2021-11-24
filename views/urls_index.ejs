@@ -10,6 +10,11 @@ Their shortened forms.
  <head>
    <%- include('./partials/head') %> 
  </head>
+
+ <header>
+   <%- include('./partials/header') %> 
+ </header>
+ 
  <body>
 
   <main style="margin: 1em;">
@@ -22,10 +27,10 @@ Their shortened forms.
         </tr>
       </thead>
       <tbody>
-        <% for(let url in urlDatabase) { %>
+        <% for(let url in urls) { %>
           <tr>
             <td><%= url %></td>
-            <td><%= urlDatabase[url] %></td>
+            <td><%= urls[url] %></td>
           </tr>
         <% } %>
       </tbody>
