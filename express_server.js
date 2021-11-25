@@ -55,15 +55,15 @@ app.post('/urls', (req, res) => {
 });
 
 
-
-
-// API route handler -> JSON res
+// Redirect to longURL - shortened for internal purposes -> out in the wild
 // ====================================================
-app.get('/urls.json', (req, res) => {
-  res.json(URL_DATABASE); // sends our existing object as a json file format // which can then be parsed by the client
-});
+app.get('/u/:shortURL', (req, res) => {
+  const longURL = URL_DATABASE[req.params.shortURL];
+  console.log(longURL);
+  res.redirect(longURL)
+})
 
-// Route Param :shortURL <-- setting the param
+// Route Param :shortURL <-- setting the param | SHOWs the current tinyURL from the param gievn by browser
 // ====================================================
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
@@ -72,6 +72,21 @@ app.get('/urls/:shortURL', (req, res) => {
   };
   res.render('urls_show', templateVars);
 });
+
+
+
+
+
+
+
+// API route handler -> JSON res
+// ====================================================
+app.get('/urls.json', (req, res) => {
+  res.json(URL_DATABASE); // sends our existing object as a json file format // which can then be parsed by the client
+});
+
+
+
 
 // get the server listening as soon as possible
 // ====================================================
