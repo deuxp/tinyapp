@@ -4,6 +4,7 @@
  * 
 */
 const express = require('express');
+const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const crypto = require("crypto"); // random strings
 const app = express(); // instance of express class -> returns your application framework
@@ -22,6 +23,7 @@ app.set('view engine', 'ejs');
 
 // Must be before all routes: parses the form buffer
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(morgan('dev'));
 
 // URLs index page
 // ====================================================
