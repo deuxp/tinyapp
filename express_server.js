@@ -11,7 +11,7 @@ const URL_DATABASE = {
 
 const generateRandomString = () => {
   return crypto.randomBytes(3).toString('hex');
-}
+};
 
 
 
@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.get('/urls', (req, res) => { // handles the response with a callback of the get method of the app obj // first arg is the page requested -> url/PATH -> '/' is the root of path
   const templateVars = {
     urls: URL_DATABASE
-  }
+  };
   // views, pass variables
   res.render('urls_index', templateVars);
 });
@@ -34,19 +34,25 @@ app.get('/urls', (req, res) => { // handles the response with a callback of the 
 // new URL shortener Form:
 // ====================================================
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new')
-})
+  res.render('urls_new');
+});
 
 
 // Post Route <-- listening for a post req to /urls
 // ====================================================
 app.post('/urls', (req, res) => {
-  console.log(req.body);
-  URL_DATABASE[generateRandomString()] = `http://${req.body.longURL}`;
-  res.send(`this is what you want??? ->> ${req.body.longURL}`)
-  console.log(`the following is the updated database`);
-  console.log(URL_DATABASE);
-})
+  const serial = generateRandomString();
+  const postInput = `http://${req.body.longURL}`;
+  const urlsList = Object.values(URL_DATABASE);
+
+  // checks if URL is already in database & update
+  if (!urlsList.includes(postInput)) {
+    URL_DATABASE[serial] = postInput;
+  }
+
+  // redirect to /urls/:shortURL
+  res.redirect(`/urls/${serial}`)
+});
 
 
 
@@ -63,9 +69,9 @@ app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: URL_DATABASE[req.params.shortURL],
-  }
-  res.render('urls_show', templateVars)
-})
+  };
+  res.render('urls_show', templateVars);
+});
 
 // get the server listening as soon as possible
 // ====================================================
