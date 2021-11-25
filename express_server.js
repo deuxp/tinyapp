@@ -1,3 +1,8 @@
+
+/** TODO: 
+ * [] handle unknown short url requests
+ * 
+*/
 const express = require('express');
 const bodyParser = require("body-parser");
 const crypto = require("crypto"); // random strings
@@ -13,11 +18,9 @@ const generateRandomString = () => {
   return crypto.randomBytes(3).toString('hex');
 };
 
-
-
 app.set('view engine', 'ejs');
 
-// before all routes
+// Must be before all routes: parses the form buffer
 app.use(bodyParser.urlencoded({extended: true}));
 
 // URLs index page
@@ -30,13 +33,11 @@ app.get('/urls', (req, res) => { // handles the response with a callback of the 
   res.render('urls_index', templateVars);
 });
 
-
 // new URL shortener Form:
 // ====================================================
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
 });
-
 
 // Post Route <-- listening for a post req to /urls
 // ====================================================
@@ -54,7 +55,7 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${serial}`)
 });
 
-
+// FIXME: needs to handle unknown shortURL
 // Redirect to longURL - shortened for internal purposes -> out in the wild
 // ====================================================
 app.get('/u/:shortURL', (req, res) => {
@@ -73,20 +74,11 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-
-
-
-
-
-
 // API route handler -> JSON res
 // ====================================================
 app.get('/urls.json', (req, res) => {
   res.json(URL_DATABASE); // sends our existing object as a json file format // which can then be parsed by the client
 });
-
-
-
 
 // get the server listening as soon as possible
 // ====================================================
