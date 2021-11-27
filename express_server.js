@@ -42,18 +42,17 @@ app.get('/urls/new', (req, res) => {
 });
 
 // FIXME: the urls conditional can be more truthy
-// Post Route <-- listening for a post req to /urls
+// Post Route <-- listening for a post req to /urls -- from urls_new.ejs
 // ====================================================
 app.post('/urls', (req, res) => {
   const serial = generateRandomString();
   const postInput = `http://${req.body.longURL}`;
   const urlsList = Object.values(URL_DATABASE);
-  
-  // checks if URL is already in database & update
+
+  // Update database
   if (!urlsList.includes(postInput)) {
     URL_DATABASE[serial] = postInput;
   }
-  
   // redirect to /urls/:shortURL
   res.redirect(`/urls/${serial}`);
 });
@@ -61,11 +60,25 @@ app.post('/urls', (req, res) => {
 
 // DELETE POST
 app.post('/urls/:shortURL/delete', (req, res) => {
-
+  
   delete URL_DATABASE[req.params.shortURL];
   res.redirect('/urls');
   
 });
+
+
+
+// EDIT
+app.post('/urls/:id/edit', (req, res) => {
+  // const editURL = req.params.id
+  console.log(req.params);
+  res.send(`${req.params.id} // ${req.body.newLongURL}`) // [] --------> redirect to the show page
+
+  
+  
+  
+});
+
 
 
 // FIXME: needs to handle unknown shortURL
@@ -74,8 +87,11 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.get('/u/:shortURL', (req, res) => {
   const longURL = URL_DATABASE[req.params.shortURL];
 
-  res.redirect(longURL);
+  res.redirect(longURL); // used on the show page.. hyperlink
 });
+
+
+
 
 // Route Param :shortURL <-- setting the param | SHOWs the current tinyURL from the param gievn by browser
 // ====================================================
