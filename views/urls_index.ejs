@@ -24,6 +24,7 @@ Their shortened forms.
         <tr>
           <th scope="col">Short URL</th>
           <th scope="col">Long URL</th>
+          <th scope="col">Edit</th>
           <th scope="col">Delete</th>
         </tr>
       </thead>
@@ -32,10 +33,21 @@ Their shortened forms.
           <tr>
             <td><%= url %></td>
             <td><%= urls[url] %></td>
+
+            <!-- edit Button -->
             <td>
               <div>
+                <form action="/urls/<%= url %>" method="GET">
+                  <button type="submit" class="btn btn-outline-primary">edit</button>
+                </form>
+              </div>
+            </td>
+
+            <!-- delete Button -->
+            <td>
+              <div> 
                 <form action="/urls/<%= url %>/delete" method="POST">
-                  <button type="submit" class="btn btn-outline-danger">Delete</button>
+                  <button type="submit" class="btn btn-outline-danger">delete</button>
                 </form>
               </div>
             </td>
@@ -43,11 +55,7 @@ Their shortened forms.
         <% } %>
       </tbody>
     </table>
-    <div class="newLink">
-      <p>
-        <a href="/urls/new">Create a new shortURL</a>
-      </p>
-    </div>
+
   </main>
 
 <!-- Bootstrap JS -->
