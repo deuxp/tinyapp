@@ -53,7 +53,6 @@ app.post('/urls', (req, res) => {
   if (!urlsList.includes(postInput)) {
     URL_DATABASE[serial] = postInput;
   }
-  // redirect to /urls/:shortURL
   res.redirect(`/urls/${serial}`);
 });
 
@@ -70,12 +69,16 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 
 // EDIT
 app.post('/urls/:id/edit', (req, res) => {
-  // const editURL = req.params.id
-  console.log(req.params);
-  res.send(`${req.params.id} // ${req.body.newLongURL}`) // [] --------> redirect to the show page
+  const shortURL = req.params.id;
+  const newLongURL = req.body.newLongURL;
+  
+  // [] ---> implment the logic, update longURL witth the key id
+  if (URL_DATABASE[shortURL]) {
+    URL_DATABASE[shortURL] = newLongURL;
+  }
 
   
-  
+  res.redirect(`/urls/${shortURL}`);
   
 });
 
@@ -96,14 +99,14 @@ app.get('/u/:shortURL', (req, res) => {
 // Route Param :shortURL <-- setting the param | SHOWs the current tinyURL from the param gievn by browser
 // ====================================================
 app.get('/urls/:shortURL', (req, res) => {
-    const urls = Object.keys(URL_DATABASE)
-    const templateVars = {
-      shortURL: req.params.shortURL,
-      longURL: URL_DATABASE[req.params.shortURL],
-    };
-    if (!urls.includes(templateVars.shortURL)){
-      return res.redirect('/urls')
-    }
+  const urls = Object.keys(URL_DATABASE);
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: URL_DATABASE[req.params.shortURL],
+  };
+  if (!urls.includes(templateVars.shortURL)) {
+    return res.redirect('/urls');
+  }
   res.render('urls_show', templateVars);
 });
 
