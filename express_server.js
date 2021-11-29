@@ -5,6 +5,7 @@
 */
 const express = require('express');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
 const crypto = require("crypto"); // random strings
 const app = express(); // instance of express class -> returns your application framework
@@ -23,6 +24,7 @@ app.set('view engine', 'ejs');
 
 // Must be before all routes: parses the form buffer
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser())
 app.use(morgan('dev'));
 
 // URLs index page
@@ -55,6 +57,14 @@ app.post('/urls', (req, res) => {
   }
   res.redirect(`/urls/${serial}`);
 });
+
+
+// Login handler: no passwd
+app.post('/login', (req,res) => {
+  res.cookie('username', req.body.username)
+  res.redirect('urls')
+})
+
 
 
 // DELETE POST
