@@ -31,7 +31,8 @@ app.use(morgan('dev'));
 // ====================================================
 app.get('/urls', (req, res) => { // handles the response with a callback of the get method of the app obj // first arg is the page requested -> url/PATH -> '/' is the root of path
   const templateVars = {
-    urls: URL_DATABASE
+    urls: URL_DATABASE,
+    username: req.cookies.username
   };
   // views, pass variables
   res.render('urls_index', templateVars);
@@ -40,6 +41,9 @@ app.get('/urls', (req, res) => { // handles the response with a callback of the 
 // new URL shortener Form:
 // ====================================================
 app.get('/urls/new', (req, res) => {
+  const templateVars = {
+    username: req.cookies.username
+  }
   res.render('urls_new');
 });
 
@@ -62,6 +66,12 @@ app.post('/urls', (req, res) => {
 // Login handler: no passwd
 app.post('/login', (req,res) => {
   res.cookie('username', req.body.username)
+  res.redirect('urls')
+})
+
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('username')
   res.redirect('urls')
 })
 
@@ -113,6 +123,7 @@ app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: URL_DATABASE[req.params.shortURL],
+    username: req.cookies.username
   };
   if (!urls.includes(templateVars.shortURL)) {
     return res.redirect('/urls');
