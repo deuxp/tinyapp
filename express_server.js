@@ -1,11 +1,10 @@
 
 /** TODO:
  * [] handle unknown short url requests
- *
 */
 const express = require('express');
 const morgan = require('morgan');
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const crypto = require("crypto"); // random strings
 const app = express(); // instance of express class -> returns your application framework
@@ -24,7 +23,7 @@ app.set('view engine', 'ejs');
 
 // Must be before all routes: parses the form buffer
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser())
+app.use(cookieParser());
 app.use(morgan('dev'));
 
 // URLs index page
@@ -43,8 +42,8 @@ app.get('/urls', (req, res) => { // handles the response with a callback of the 
 app.get('/urls/new', (req, res) => {
   const templateVars = {
     username: req.cookies.username
-  }
-  res.render('urls_new');
+  };
+  res.render('urls_new', templateVars);
 });
 
 // FIXME: the urls conditional can be more truthy
@@ -65,43 +64,33 @@ app.post('/urls', (req, res) => {
 
 // Login handler: no passwd
 app.post('/login', (req,res) => {
-  res.cookie('username', req.body.username)
-  res.redirect('urls')
-})
+  res.cookie('username', req.body.username);
+  res.redirect('urls');
+});
 
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('username')
-  res.redirect('urls')
-})
-
+  res.clearCookie('username');
+  res.redirect('urls');
+});
 
 
 // DELETE POST
 app.post('/urls/:shortURL/delete', (req, res) => {
-  
   delete URL_DATABASE[req.params.shortURL];
   res.redirect('/urls');
-  
 });
 
 
-
-// EDIT
+// Update an existing short url with a new long url
 app.post('/urls/:id/edit', (req, res) => {
   const shortURL = req.params.id;
   const newLongURL = req.body.newLongURL;
-  
-  // [] ---> implment the logic, update longURL witth the key id
   if (URL_DATABASE[shortURL]) {
     URL_DATABASE[shortURL] = newLongURL;
   }
-
-  
   res.redirect(`/urls/${shortURL}`);
-  
 });
-
 
 
 // FIXME: needs to handle unknown shortURL
@@ -112,8 +101,6 @@ app.get('/u/:shortURL', (req, res) => {
 
   res.redirect(longURL); // used on the show page.. hyperlink
 });
-
-
 
 
 // Route Param :shortURL <-- setting the param | SHOWs the current tinyURL from the param gievn by browser
@@ -132,14 +119,11 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 
-
 // API route handler -> JSON res
 // ====================================================
 app.get('/urls.json', (req, res) => {
   res.json(URL_DATABASE); // sends our existing object as a json file format // which can then be parsed by the client
 });
-
-
 
 
 // get the server listening as soon as possible
