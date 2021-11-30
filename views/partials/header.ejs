@@ -10,12 +10,12 @@
     </div>
   </div>
 
-  <% if (username) { %> 
+  <% if (user[id]) { %> 
 
     <div id="logoutOption">
       <form action="/logout" class="form-inline" method="POST">
         <div class="form-group mb-2">
-          <label for="logout">Logged in as <%= username %>! </label>
+          <label for="logout">Logged in as <%= user[id].email %>! </label>
           <button name="logout" type="submit" class="btn btn-outline-dark" style="margin: 1em">logout</button>
         </div>
       </form>
@@ -23,13 +23,13 @@
     
     <% } else { %>
       
-      <div id="loginOption">
-        <form action="/login" class="form-inline" method="POST">
-          <div class="form-group mb-2">
-            <input type="text" name="username" placeholder="Enter username" style="width: 175px; margin: 1em">
-            <button type="submit" class="btn btn-outline-dark">login</button>
-          </div>
-        </form>
+      <div id="loginOrRegister" class="mr-3">
+        <div class="row">
+          <a href="/login">Login</a>
+        </div>
+        <div class="row">
+          <a href="/register">Register</a>
+        </div>
       </div>
 
   <% } %> 
