@@ -15,6 +15,8 @@ const URL_DATABASE = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {};
+
 const generateRandomString = () => {
   return crypto.randomBytes(3).toString('hex');
 };
@@ -60,6 +62,29 @@ app.post('/urls', (req, res) => {
   }
   res.redirect(`/urls/${serial}`);
 });
+
+// register Handler
+
+
+app.get('/register', (req, res) => {
+  const templateVars = {
+    username: req.cookies.username
+  };
+  res.render('register', templateVars)
+
+})
+
+
+app.post('register', (req, res) => {
+  const userID = generateRandomString();
+  users.userID = {
+    id: userID,
+    email: req.body.email,
+    password: req.body.password
+  }
+
+  
+})
 
 
 // Login handler: no passwd
