@@ -64,8 +64,6 @@ app.post('/urls', (req, res) => {
 });
 
 // register Handler
-
-
 app.get('/register', (req, res) => {
   const templateVars = {
     username: req.cookies.username
@@ -75,15 +73,16 @@ app.get('/register', (req, res) => {
 })
 
 
-app.post('register', (req, res) => {
+app.post('/register', (req, res) => {
   const userID = generateRandomString();
   users.userID = {
     id: userID,
     email: req.body.email,
     password: req.body.password
   }
-
-  
+  console.log(`user obj\n${users.userID.email}`);
+  res.cookie('userID', userID)
+  res.redirect('urls')
 })
 
 
