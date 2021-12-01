@@ -1,7 +1,3 @@
-
-/** TODO:
- * 
-*/
 const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
@@ -21,19 +17,19 @@ const generateRandomString = () => {
   return crypto.randomBytes(3).toString('hex');
 };
 
+// returns user ID or undefined
 const emailChecker = email => {
   if (email) {
     for (const user in users) {
       if (Object.hasOwnProperty.call(users, user)) {
         const existing = users[user].email;
         if (email === existing) {
-          return true
+          return user
         }
       }
     }
   }
-  return false
-}
+};
 
 app.set('view engine', 'ejs');
 
@@ -47,11 +43,9 @@ app.use(morgan('dev'));
 app.get('/urls', (req, res) => { // handles the response with a callback of the get method of the app obj // first arg is the page requested -> url/PATH -> '/' is the root of path
   const templateVars = {
     urls: URL_DATABASE,
-    // username: req.cookies.username
     user: users,
     id: req.cookies.userID
   };
-  // views, pass variables
   res.render('urls_index', templateVars);
 });
 
@@ -59,7 +53,6 @@ app.get('/urls', (req, res) => { // handles the response with a callback of the 
 // ====================================================
 app.get('/urls/new', (req, res) => {
   const templateVars = {
-    // username: req.cookies.username
     user: users,
     id: req.cookies.userID
   };
@@ -67,7 +60,6 @@ app.get('/urls/new', (req, res) => {
 });
 
 // FIXME: the urls conditional can be more truthy
-// Post Route <-- listening for a post req to /urls -- from urls_new.ejs
 // ====================================================
 app.post('/urls', (req, res) => {
   const serial = generateRandomString();
@@ -84,7 +76,6 @@ app.post('/urls', (req, res) => {
 // register Handler
 app.get('/register', (req, res) => {
   const templateVars = {
-    // username: req.cookies.username
     user: users,
     id: req.cookies.userID
   };
@@ -130,13 +121,34 @@ app.get('/login', (req,res) => {
   res.render('login', templateVars)
 })
 
-
-// !!! DEPRICATED
-// Login handler: no passwd WIll be changed
 app.post('/login', (req,res) => {
-  // res.cookie('username', req.body.username);
-  res.redirect('urls');
+  const emailInput = req.body.email
+  const passwd = req.body.password
+  const id = emailChecker(emailInput)
+  
+  // email not found 
+  if (!id) {
+    return res.status(403).send('email not found')
+  }
+  // email found, but password not verified
+  const verified = users[id].password === passwd;
+
+  console.log(users);
+  console.log(users[id].password);
+  console.log(passwd);
+  console.log(verified);
+  
+  
+  
+  
+  
+  if (verified) {
+    res.cookie('userID', id)
+    return res.redirect('urls');
+  }
+  res.status(403).send('password not correct')
 });
+
 
 
 app.post('/logout', (req, res) => {
@@ -180,7 +192,8 @@ app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: URL_DATABASE[req.params.shortURL],
-    username: req.cookies.username
+    user: users,
+    id: req.cookies.userID
   };
   if (!urls.includes(templateVars.shortURL)) {
     return res.redirect('/urls');
