@@ -2,14 +2,11 @@ const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt'); // password hash
 const crypto = require("crypto"); // random strings
-const app = express(); // instance of express class -> returns your application framework
+const app = express();
 const PORT = 8080;
 
-// const URL_DATABASE = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
 const URL_DATABASE = {
   "axx111": {
     longURL: 'https://github.com/deuxp',
@@ -73,7 +70,7 @@ const urlsForUserID = (obj, id) => {
 
 app.set('view engine', 'ejs');
 
-// Must be before all routes: parses the form buffer
+// Must be before all routes: parses the buffer from req.body
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(morgan('dev'));
@@ -160,10 +157,12 @@ app.post('/register', (req, res) => {
   }
 
   const userID = generateRandomString();
+  const hashPasswd = bcrypt.hashSync(req.body.password, 10);
+  
   users[userID] = {
     id: userID,
     email: req.body.email,
-    password: req.body.password
+    password: hashPasswd
   }
   res.cookie('userID', userID)
   res.redirect('urls')
@@ -184,13 +183,14 @@ app.post('/login', (req,res) => {
   const passwd = req.body.password
   const id = emailChecker(emailInput)
   
-  console.log(id);
+  console.log(users[id]);
   // email not found 
   if (!id) {
     return res.status(403).send('email not found')
   }
   // email found, but password not verified
-  const verified = users[id].password === passwd;
+  // const verified = users[id].password === passwd;
+  const verified = (passwd, users[id].password);
 
   if (verified) {
     res.cookie('userID', id)
