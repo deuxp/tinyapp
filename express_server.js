@@ -6,13 +6,17 @@ const crypto = require("crypto"); // random strings
 const app = express(); // instance of express class -> returns your application framework
 const PORT = 8080;
 
+// const URL_DATABASE = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
+// };
 const URL_DATABASE = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "axx111": {
+    longURL: 'https://github.com/deuxp',
+    userID: 'frieds'
+  }
 };
-
 const users = {};
-
 const generateRandomString = () => {
   return crypto.randomBytes(3).toString('hex');
 };
@@ -46,6 +50,7 @@ app.get('/urls', (req, res) => { // handles the response with a callback of the 
     user: users,
     id: req.cookies.userID
   };
+  console.log(URL_DATABASE);
   res.render('urls_index', templateVars);
 });
 
@@ -56,23 +61,39 @@ app.get('/urls/new', (req, res) => {
     user: users,
     id: req.cookies.userID
   };
-  console.log(templateVars.id);
   if (templateVars.id) {
     return res.render('urls_new', templateVars);
   }
   res.redirect('/login');
 });
 
+// to replace urlsList with the new structure
+const urlsList = obj => {
+  let list = []
+  for (const short in obj) {
+    if (Object.hasOwnProperty.call(obj, short)) {
+      const long = obj[short].longURL;
+      list.push(long)
+    }
+  }
+  return list
+}
+
+
+
 // FIXME: the urls conditional can be more truthy
 // ====================================================
 app.post('/urls', (req, res) => {
   const serial = generateRandomString();
   const postInput = `http://${req.body.longURL}`;
-  const urlsList = Object.values(URL_DATABASE);
+  const urList = urlsList(URL_DATABASE);
 
   // Update database
-  if (!urlsList.includes(postInput)) {
-    URL_DATABASE[serial] = postInput;
+  if (!urList.includes(postInput)) {
+    URL_DATABASE[serial] = {
+      longURL: postInput,
+      userID: req.cookies.userID
+    }
   }
   res.redirect(`/urls/${serial}`);
 });
@@ -90,7 +111,6 @@ app.get('/register', (req, res) => {
 
  
 app.post('/register', (req, res) => {
-  console.log(users);
   
   if (!req.body.email) {
     res.status(400);
@@ -111,7 +131,6 @@ app.post('/register', (req, res) => {
     email: req.body.email,
     password: req.body.password
   }
-  console.log(users);
   res.cookie('userID', userID)
   res.redirect('urls')
 })
@@ -163,7 +182,7 @@ app.post('/urls/:id/edit', (req, res) => {
   const shortURL = req.params.id;
   const newLongURL = req.body.newLongURL;
   if (URL_DATABASE[shortURL]) {
-    URL_DATABASE[shortURL] = newLongURL;
+    URL_DATABASE[shortURL].longURL = newLongURL;
   }
   res.redirect(`/urls/${shortURL}`);
 });
@@ -173,7 +192,7 @@ app.post('/urls/:id/edit', (req, res) => {
 // Redirect to longURL - shortened for internal purposes -> out in the wild
 // ====================================================
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = URL_DATABASE[req.params.shortURL];
+  const longURL = URL_DATABASE[req.params.shortURL].longURL;
 
   res.redirect(longURL); // used on the show page.. hyperlink
 });
@@ -182,10 +201,10 @@ app.get('/u/:shortURL', (req, res) => {
 // Route Param :shortURL <-- setting the param | SHOWs the current tinyURL from the param gievn by browser
 // ====================================================
 app.get('/urls/:shortURL', (req, res) => {
-  const urls = Object.keys(URL_DATABASE);
+  const urls = Object.keys(URL_DATABASE); // list of keys -> shortys
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: URL_DATABASE[req.params.shortURL],
+    longURL: URL_DATABASE[req.params.shortURL].longURL,
     user: users,
     id: req.cookies.userID
   };
