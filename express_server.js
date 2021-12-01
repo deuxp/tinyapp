@@ -56,7 +56,11 @@ app.get('/urls/new', (req, res) => {
     user: users,
     id: req.cookies.userID
   };
-  res.render('urls_new', templateVars);
+  console.log(templateVars.id);
+  if (templateVars.id) {
+    return res.render('urls_new', templateVars);
+  }
+  res.redirect('/login');
 });
 
 // FIXME: the urls conditional can be more truthy
@@ -133,22 +137,12 @@ app.post('/login', (req,res) => {
   // email found, but password not verified
   const verified = users[id].password === passwd;
 
-  console.log(users);
-  console.log(users[id].password);
-  console.log(passwd);
-  console.log(verified);
-  
-  
-  
-  
-  
   if (verified) {
     res.cookie('userID', id)
     return res.redirect('urls');
   }
   res.status(403).send('password not correct')
 });
-
 
 
 app.post('/logout', (req, res) => {
