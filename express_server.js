@@ -16,12 +16,19 @@ const URL_DATABASE = {
     userID: 'frieds'
   }
 };
-const users = {};
+const users = {
+  frieds: {
+    id: 'frieds',
+    email: 'rx@gmail.com',
+    password: '456'
+  }
+};
 const generateRandomString = () => {
   return crypto.randomBytes(3).toString('hex');
 };
 
-// returns user ID or undefined
+
+// Returns user ID or undefined
 const emailChecker = email => {
   if (email) {
     for (const user in users) {
@@ -35,6 +42,35 @@ const emailChecker = email => {
   }
 };
 
+// Returns a prime list of all ong urls stored in the database
+const urlsList = obj => {
+  let list = []
+  for (const short in obj) {
+    if (Object.hasOwnProperty.call(obj, short)) {
+      const long = obj[short].longURL;
+      list.push(long)
+    }
+  }
+  return list
+}
+
+// Returns a list of shorURLs or [keys] that match the user `id` param
+const urlsForUserID = (obj, id) => {
+  let list = []
+  for (const short in obj) {
+    if (Object.hasOwnProperty.call(obj, short)) {
+      const ownedBy = obj[short].userID;
+      const owner = id;
+
+      if (ownedBy === owner) {
+        list.push(short)
+      }
+    }
+  }
+  return list
+};
+
+
 app.set('view engine', 'ejs');
 
 // Must be before all routes: parses the form buffer
@@ -42,19 +78,29 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(morgan('dev'));
 
+
 // URLs index page
 // ====================================================
-app.get('/urls', (req, res) => { // handles the response with a callback of the get method of the app obj // first arg is the page requested -> url/PATH -> '/' is the root of path
+app.get('/urls', (req, res) => {
+  const displayDatabase = {};
   const templateVars = {
-    urls: URL_DATABASE,
+    urls: displayDatabase,
     user: users,
     id: req.cookies.userID
   };
-  console.log(URL_DATABASE);
-  res.render('urls_index', templateVars);
+  const myUrls = urlsForUserID(URL_DATABASE, templateVars.id)
+  const userList = Object.keys(users);
+  
+  myUrls.forEach(url => {
+    displayDatabase[url] = URL_DATABASE[url]
+  });
+
+  if (userList.includes(templateVars.id)) return res.render('urls_index', templateVars);
+  res.redirect('/login')
 });
 
-// new URL shortener Form:
+
+// GET URL shortener Form:
 // ====================================================
 app.get('/urls/new', (req, res) => {
   const templateVars = {
@@ -67,21 +113,8 @@ app.get('/urls/new', (req, res) => {
   res.redirect('/login');
 });
 
-// to replace urlsList with the new structure
-const urlsList = obj => {
-  let list = []
-  for (const short in obj) {
-    if (Object.hasOwnProperty.call(obj, short)) {
-      const long = obj[short].longURL;
-      list.push(long)
-    }
-  }
-  return list
-}
 
-
-
-// FIXME: the urls conditional can be more truthy
+// POST NEW URL to database
 // ====================================================
 app.post('/urls', (req, res) => {
   const serial = generateRandomString();
@@ -98,7 +131,8 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${serial}`);
 });
 
-// register Handler
+
+// GET /register
 app.get('/register', (req, res) => {
   const templateVars = {
     user: users,
@@ -109,7 +143,7 @@ app.get('/register', (req, res) => {
 })
 
 
- 
+// ====================================================
 app.post('/register', (req, res) => {
   
   if (!req.body.email) {
@@ -144,11 +178,13 @@ app.get('/login', (req,res) => {
   res.render('login', templateVars)
 })
 
+
 app.post('/login', (req,res) => {
   const emailInput = req.body.email
   const passwd = req.body.password
   const id = emailChecker(emailInput)
   
+  console.log(id);
   // email not found 
   if (!id) {
     return res.status(403).send('email not found')
@@ -164,6 +200,7 @@ app.post('/login', (req,res) => {
 });
 
 
+// CLEAR COOKIE
 app.post('/logout', (req, res) => {
   res.clearCookie('userID');
   res.redirect('urls');
@@ -172,24 +209,33 @@ app.post('/logout', (req, res) => {
 
 // DELETE POST
 app.post('/urls/:shortURL/delete', (req, res) => {
-  delete URL_DATABASE[req.params.shortURL];
+  const id = req.cookies.userID;
+  const url = req.params.shortURL;
+  const myUrls = urlsForUserID(URL_DATABASE, id); // personal database keys
+
+  if (myUrls.includes(url)) {
+    delete URL_DATABASE[url];
+  }
   res.redirect('/urls');
 });
 
 
-// Update an existing short url with a new long url
+// EDIT POST
 app.post('/urls/:id/edit', (req, res) => {
+  const user = req.cookies.userID;
   const shortURL = req.params.id;
   const newLongURL = req.body.newLongURL;
-  if (URL_DATABASE[shortURL]) {
+  const myUrls = urlsForUserID(URL_DATABASE, user); // personal database keys
+
+  if (myUrls.includes(shortURL)) {
     URL_DATABASE[shortURL].longURL = newLongURL;
+    return res.redirect(`/urls/${shortURL}`);
   }
-  res.redirect(`/urls/${shortURL}`);
+  res.redirect('/urls');
 });
 
 
-// FIXME: needs to handle unknown shortURL
-// Redirect to longURL - shortened for internal purposes -> out in the wild
+// REDIRECT for show page
 // ====================================================
 app.get('/u/:shortURL', (req, res) => {
   const longURL = URL_DATABASE[req.params.shortURL].longURL;
@@ -201,14 +247,15 @@ app.get('/u/:shortURL', (req, res) => {
 // Route Param :shortURL <-- setting the param | SHOWs the current tinyURL from the param gievn by browser
 // ====================================================
 app.get('/urls/:shortURL', (req, res) => {
-  const urls = Object.keys(URL_DATABASE); // list of keys -> shortys
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: URL_DATABASE[req.params.shortURL].longURL,
+    longUrl: URL_DATABASE[req.params.shortURL].longURL,
     user: users,
     id: req.cookies.userID
   };
-  if (!urls.includes(templateVars.shortURL)) {
+  const myUrls = urlsForUserID(URL_DATABASE, templateVars.id)
+
+  if (!myUrls.includes(templateVars.shortURL)) {
     return res.redirect('/urls');
   }
   res.render('urls_show', templateVars);
