@@ -7,7 +7,7 @@ const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080;
 
-const URL_DATABASE = {};
+const urlDatabase = {};
 const users = {};
 
 
@@ -31,7 +31,7 @@ const emailChecker = email => {
 
 
 // Returns a list of shorURLs or [keys] that match the user `id` param
-const myShortURLS = (obj, id) => {
+const myShortUrls = (obj, id) => {
   let list = [];
   for (const short in obj) {
     if (Object.hasOwnProperty.call(obj, short)) {
@@ -46,7 +46,7 @@ const myShortURLS = (obj, id) => {
   return list;
 };
 
-// Returns a list of longURLs owned by a userID, given the params: (a) main database, (b) myShortURLS as a callback, (c) userID
+// Returns a list of longURLs owned by a userID, given the params: (a) main database, (b) myShortUrls as a callback, (c) userID
 const myLongURLS = (obj, cb, id) => {
   const result = [];
   cb(obj, id).forEach(key => {
@@ -56,7 +56,7 @@ const myLongURLS = (obj, cb, id) => {
 };
 
 
-// constructs a custom databse for a user, given the params: (a) main database, (b) myShortURLS as a callback, (c) userID
+// constructs a custom databse for a user, given the params: (a) main database, (b) myShortUrls as a callback, (c) userID
 const myDatabase = (obj, cb, id) => {
   const result = {};
   cb(obj, id).forEach(key => {
@@ -94,12 +94,12 @@ app.get('/urls', (req, res) => {
     user: users,
     id: req.session.userID
   };
-  const myUrls = myShortURLS(URL_DATABASE, templateVars.id);
+  const myUrls = myShortUrls(urlDatabase, templateVars.id);
   const userList = Object.keys(users);
 
   // Display only URLs owned by a userID
   myUrls.forEach(url => {
-    displayDatabase[url] = URL_DATABASE[url];
+    displayDatabase[url] = urlDatabase[url];
   });
 
   if (userList.includes(templateVars.id)) return res.render('urls_index', templateVars);
@@ -124,20 +124,20 @@ app.get('/urls/new', (req, res) => {
 app.post('/urls', (req, res) => {
   const postInput = `http://${req.body.longURL}`;
   const id = req.session.userID;
-  const urList = myLongURLS(URL_DATABASE, myShortURLS, id);
+  const urList = myLongURLS(urlDatabase, myShortUrls, id);
   
   // Update database
   if (!urList.includes(postInput)) {
     const serial = generateRandomString();
-    URL_DATABASE[serial] = {
+    urlDatabase[serial] = {
       longURL: postInput,
       userID: id
     };
     return res.redirect(`/urls/${serial}`);
   }
   // go to edit page
-  const db = myDatabase(URL_DATABASE, myShortURLS, id);
-  const short = shortFromLong(db, postInput);
+  const shortList = myDatabase(urlDatabase, myShortUrls, id);
+  const short = shortFromLong(shortList, postInput);
   res.redirect(`/urls/${short}`);
 });
 
@@ -223,10 +223,10 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   const url = req.params.shortURL;
 
   // personal database key list
-  const myUrls = myShortURLS(URL_DATABASE, id);
+  const myUrls = myShortUrls(urlDatabase, id);
 
   if (myUrls.includes(url)) {
-    delete URL_DATABASE[url];
+    delete urlDatabase[url];
   }
   res.redirect('/urls');
 });
@@ -237,10 +237,10 @@ app.post('/urls/:id/edit', (req, res) => {
   const user = req.session.userID;
   const shortURL = req.params.id;
   const newLongURL = req.body.newLongURL;
-  const myUrls = myShortURLS(URL_DATABASE, user); // personal database keys
+  const myUrls = myShortUrls(urlDatabase, user); // personal database keys
 
   if (myUrls.includes(shortURL)) {
-    URL_DATABASE[shortURL].longURL = newLongURL;
+    urlDatabase[shortURL].longURL = newLongURL;
     return res.redirect(`/urls/${shortURL}`);
   }
   res.redirect('/urls');
@@ -250,7 +250,7 @@ app.post('/urls/:id/edit', (req, res) => {
 // REDIRECT for show page
 // ====================================================
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = URL_DATABASE[req.params.shortURL].longURL;
+  const longURL = urlDatabase[req.params.shortURL].longURL;
 
   res.redirect(longURL); // used on the show page.. hyperlink
 });
@@ -260,11 +260,11 @@ app.get('/u/:shortURL', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
-    longUrl: URL_DATABASE[req.params.shortURL].longURL,
+    longUrl: urlDatabase[req.params.shortURL].longURL,
     user: users,
     id: req.session.userID
   };
-  const myUrls = myShortURLS(URL_DATABASE, templateVars.id);
+  const myUrls = myShortUrls(urlDatabase, templateVars.id);
 
   if (!myUrls.includes(templateVars.shortURL)) {
     return res.redirect('/urls');
@@ -276,7 +276,7 @@ app.get('/urls/:shortURL', (req, res) => {
 // API route handler -> JSON res
 // ====================================================
 app.get('/urls.json', (req, res) => {
-  res.json(URL_DATABASE); // sends our existing object as a json file format // which can then be parsed by the client
+  res.json(urlDatabase); // sends our existing object as a json file format // which can then be parsed by the client
 });
 
 
