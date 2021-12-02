@@ -3,7 +3,7 @@ const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt'); // password hash
 const crypto = require("crypto"); // random strings
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080;
 
@@ -22,41 +22,58 @@ const emailChecker = email => {
       if (Object.hasOwnProperty.call(users, user)) {
         const existing = users[user].email;
         if (email === existing) {
-          return user
+          return user;
         }
       }
     }
   }
 };
 
-// Returns a prime list of every long url stored in the database
-const urlsList = obj => {
-  let list = []
-  for (const short in obj) {
-    if (Object.hasOwnProperty.call(obj, short)) {
-      const long = obj[short].longURL;
-      list.push(long)
-    }
-  }
-  return list
-}
 
 // Returns a list of shorURLs or [keys] that match the user `id` param
-const urlsForUserID = (obj, id) => {
-  let list = []
+const myShortURLS = (obj, id) => {
+  let list = [];
   for (const short in obj) {
     if (Object.hasOwnProperty.call(obj, short)) {
       const ownedBy = obj[short].userID;
       const owner = id;
-
+      
       if (ownedBy === owner) {
-        list.push(short)
+        list.push(short);
       }
     }
   }
-  return list
+  return list;
 };
 
+// Returns a list of longURLs owned by a userID, given the params: (a) main database, (b) myShortURLS as a callback, (c) userID
+const myLongURLS = (obj, cb, id) => {
+  const result = [];
+  cb(obj, id).forEach(key => {
+    result.push(obj[key].longURL);
+  });
+  return result;
+};
+
+
+// constructs a custom databse for a user, given the params: (a) main database, (b) myShortURLS as a callback, (c) userID
+const myDatabase = (obj, cb, id) => {
+  const result = {};
+  cb(obj, id).forEach(key => {
+    result[key] = obj[key];
+  });
+  return result;
+};
+
+// use myDatabase constructed as obj
+const shortFromLong = (obj, longA) => {
+  for (const key in obj) {
+    if (Object.hasOwnProperty.call(obj, key)) {
+      const longB = obj[key].longURL;
+      if (longA === longB) return key;
+    }
+  }
+};
 
 app.set('view engine', 'ejs');
 
@@ -65,12 +82,11 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
-}))
+}));
 app.use(morgan('dev'));
 
 
 // URLs index page
-// ====================================================
 app.get('/urls', (req, res) => {
   const displayDatabase = {};
   const templateVars = {
@@ -78,20 +94,20 @@ app.get('/urls', (req, res) => {
     user: users,
     id: req.session.userID
   };
-  const myUrls = urlsForUserID(URL_DATABASE, templateVars.id)
+  const myUrls = myShortURLS(URL_DATABASE, templateVars.id);
   const userList = Object.keys(users);
-  
+
+  // Display only URLs owned by a userID
   myUrls.forEach(url => {
-    displayDatabase[url] = URL_DATABASE[url]
+    displayDatabase[url] = URL_DATABASE[url];
   });
 
   if (userList.includes(templateVars.id)) return res.render('urls_index', templateVars);
-  res.redirect('/login')
+  res.redirect('/login');
 });
 
 
 // GET URL shortener Form:
-// ====================================================
 app.get('/urls/new', (req, res) => {
   const templateVars = {
     user: users,
@@ -105,20 +121,24 @@ app.get('/urls/new', (req, res) => {
 
 
 // POST NEW URL to database
-// ====================================================
 app.post('/urls', (req, res) => {
-  const serial = generateRandomString();
   const postInput = `http://${req.body.longURL}`;
-  const urList = urlsList(URL_DATABASE);
-
+  const id = req.session.userID;
+  const urList = myLongURLS(URL_DATABASE, myShortURLS, id);
+  
   // Update database
   if (!urList.includes(postInput)) {
+    const serial = generateRandomString();
     URL_DATABASE[serial] = {
       longURL: postInput,
-      userID: req.session.userID
-    }
+      userID: id
+    };
+    return res.redirect(`/urls/${serial}`);
   }
-  res.redirect(`/urls/${serial}`);
+  // go to edit page
+  const db = myDatabase(URL_DATABASE, myShortURLS, id);
+  const short = shortFromLong(db, postInput);
+  res.redirect(`/urls/${short}`);
 });
 
 
@@ -128,9 +148,9 @@ app.get('/register', (req, res) => {
     user: users,
     id: req.session.userID
   };
-  res.render('register', templateVars)
+  res.render('register', templateVars);
 
-})
+});
 
 
 // ====================================================
@@ -138,15 +158,15 @@ app.post('/register', (req, res) => {
   
   if (!req.body.email) {
     res.status(400);
-    return res.send(`you must enter a valid email`)
+    return res.send(`you must enter a valid email`);
   }
   if (!req.body.password) {
     res.status(400);
-    return res.send(`you must enter a valid password`)
+    return res.send(`you must enter a valid password`);
   }
   if (emailChecker(req.body.email)) {
     res.status(400);
-    return res.send(`User already exists`)
+    return res.send(`User already exists`);
   }
 
   const userID = generateRandomString();
@@ -156,10 +176,10 @@ app.post('/register', (req, res) => {
     id: userID,
     email: req.body.email,
     password: hashPasswd
-  }
+  };
   req.session.userID = userID;
-  res.redirect('urls')
-})
+  res.redirect('urls');
+});
 
 
 app.get('/login', (req,res) => {
@@ -167,27 +187,26 @@ app.get('/login', (req,res) => {
     user: users,
     id: req.session.userID
   };
-  res.render('login', templateVars)
-})
+  res.render('login', templateVars);
+});
 
 
 app.post('/login', (req,res) => {
-  const emailInput = req.body.email
-  const passwd = req.body.password
-  const id = emailChecker(emailInput)
+  const emailInput = req.body.email;
+  const passwd = req.body.password;
+  const id = emailChecker(emailInput);
   
-  // email not found 
+  // email not found
   if (!id) {
-    return res.status(403).send('email not found')
+    return res.status(403).send('email not found');
   }
-  // email found, but password not verified
+  // Password Check
   const verified = bcrypt.compareSync(passwd, users[id].password);
-
   if (verified) {
     req.session.userID = id;
     return res.redirect('urls');
   }
-  res.status(403).send('password not correct')
+  res.status(403).send('password not correct');
 });
 
 
@@ -204,7 +223,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   const url = req.params.shortURL;
 
   // personal database key list
-  const myUrls = urlsForUserID(URL_DATABASE, id);
+  const myUrls = myShortURLS(URL_DATABASE, id);
 
   if (myUrls.includes(url)) {
     delete URL_DATABASE[url];
@@ -218,7 +237,7 @@ app.post('/urls/:id/edit', (req, res) => {
   const user = req.session.userID;
   const shortURL = req.params.id;
   const newLongURL = req.body.newLongURL;
-  const myUrls = urlsForUserID(URL_DATABASE, user); // personal database keys
+  const myUrls = myShortURLS(URL_DATABASE, user); // personal database keys
 
   if (myUrls.includes(shortURL)) {
     URL_DATABASE[shortURL].longURL = newLongURL;
@@ -245,7 +264,7 @@ app.get('/urls/:shortURL', (req, res) => {
     user: users,
     id: req.session.userID
   };
-  const myUrls = urlsForUserID(URL_DATABASE, templateVars.id)
+  const myUrls = myShortURLS(URL_DATABASE, templateVars.id);
 
   if (!myUrls.includes(templateVars.shortURL)) {
     return res.redirect('/urls');
