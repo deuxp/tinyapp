@@ -1,29 +1,19 @@
 const express = require('express');
 const morgan = require('morgan');
-const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt'); // password hash
 const crypto = require("crypto"); // random strings
+const cookieSession = require('cookie-session')
 const app = express();
 const PORT = 8080;
 
-const URL_DATABASE = {
-  "axx111": {
-    longURL: 'https://github.com/deuxp',
-    userID: 'frieds'
-  }
-};
-const users = {
-  frieds: {
-    id: 'frieds',
-    email: 'rx@gmail.com',
-    password: '456'
-  }
-};
+const URL_DATABASE = {};
+const users = {};
+
+
 const generateRandomString = () => {
   return crypto.randomBytes(3).toString('hex');
 };
-
 
 // Returns user ID or undefined
 const emailChecker = email => {
@@ -39,7 +29,7 @@ const emailChecker = email => {
   }
 };
 
-// Returns a prime list of all ong urls stored in the database
+// Returns a prime list of every long url stored in the database
 const urlsList = obj => {
   let list = []
   for (const short in obj) {
@@ -72,7 +62,10 @@ app.set('view engine', 'ejs');
 
 // Must be before all routes: parses the buffer from req.body
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}))
 app.use(morgan('dev'));
 
 
@@ -83,7 +76,7 @@ app.get('/urls', (req, res) => {
   const templateVars = {
     urls: displayDatabase,
     user: users,
-    id: req.cookies.userID
+    id: req.session.userID
   };
   const myUrls = urlsForUserID(URL_DATABASE, templateVars.id)
   const userList = Object.keys(users);
@@ -102,7 +95,7 @@ app.get('/urls', (req, res) => {
 app.get('/urls/new', (req, res) => {
   const templateVars = {
     user: users,
-    id: req.cookies.userID
+    id: req.session.userID
   };
   if (templateVars.id) {
     return res.render('urls_new', templateVars);
@@ -122,7 +115,7 @@ app.post('/urls', (req, res) => {
   if (!urList.includes(postInput)) {
     URL_DATABASE[serial] = {
       longURL: postInput,
-      userID: req.cookies.userID
+      userID: req.session.userID
     }
   }
   res.redirect(`/urls/${serial}`);
@@ -133,7 +126,7 @@ app.post('/urls', (req, res) => {
 app.get('/register', (req, res) => {
   const templateVars = {
     user: users,
-    id: req.cookies.userID
+    id: req.session.userID
   };
   res.render('register', templateVars)
 
@@ -164,7 +157,7 @@ app.post('/register', (req, res) => {
     email: req.body.email,
     password: hashPasswd
   }
-  res.cookie('userID', userID)
+  req.session.userID = userID;
   res.redirect('urls')
 })
 
@@ -172,7 +165,7 @@ app.post('/register', (req, res) => {
 app.get('/login', (req,res) => {
   const templateVars = {
     user: users,
-    id: req.cookies.userID
+    id: req.session.userID
   };
   res.render('login', templateVars)
 })
@@ -183,17 +176,15 @@ app.post('/login', (req,res) => {
   const passwd = req.body.password
   const id = emailChecker(emailInput)
   
-  console.log(users[id]);
   // email not found 
   if (!id) {
     return res.status(403).send('email not found')
   }
   // email found, but password not verified
-  // const verified = users[id].password === passwd;
-  const verified = (passwd, users[id].password);
+  const verified = bcrypt.compareSync(passwd, users[id].password);
 
   if (verified) {
-    res.cookie('userID', id)
+    req.session.userID = id;
     return res.redirect('urls');
   }
   res.status(403).send('password not correct')
@@ -202,16 +193,18 @@ app.post('/login', (req,res) => {
 
 // CLEAR COOKIE
 app.post('/logout', (req, res) => {
-  res.clearCookie('userID');
+  req.session.userID = null;
   res.redirect('urls');
 });
 
 
 // DELETE POST
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const id = req.cookies.userID;
+  const id = req.session.userID;
   const url = req.params.shortURL;
-  const myUrls = urlsForUserID(URL_DATABASE, id); // personal database keys
+
+  // personal database key list
+  const myUrls = urlsForUserID(URL_DATABASE, id);
 
   if (myUrls.includes(url)) {
     delete URL_DATABASE[url];
@@ -222,7 +215,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 
 // EDIT POST
 app.post('/urls/:id/edit', (req, res) => {
-  const user = req.cookies.userID;
+  const user = req.session.userID;
   const shortURL = req.params.id;
   const newLongURL = req.body.newLongURL;
   const myUrls = urlsForUserID(URL_DATABASE, user); // personal database keys
@@ -244,14 +237,13 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 
-// Route Param :shortURL <-- setting the param | SHOWs the current tinyURL from the param gievn by browser
 // ====================================================
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longUrl: URL_DATABASE[req.params.shortURL].longURL,
     user: users,
-    id: req.cookies.userID
+    id: req.session.userID
   };
   const myUrls = urlsForUserID(URL_DATABASE, templateVars.id)
 
@@ -272,5 +264,5 @@ app.get('/urls.json', (req, res) => {
 // get the server listening as soon as possible
 // ====================================================
 app.listen(PORT, () => {
-  console.log(`Example app listening on port: ${PORT}`);
+  console.log(`Tiny App listening on port: ${PORT}`);
 });
