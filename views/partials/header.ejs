@@ -10,12 +10,12 @@
     </div>
   </div>
 
-  <% if (user[id]) { %> 
+  <% if (users[userID]) { %> 
 
     <div id="logoutOption">
       <form action="/logout" class="form-inline" method="POST">
         <div class="form-group mb-2">
-          <label for="logout">Logged in as <%= user[id].email %>! </label>
+          <label for="logout">Logged in as <%= users[userID].email %>! </label>
           <button name="logout" type="submit" class="btn btn-outline-dark" style="margin: 1em">logout</button>
         </div>
       </form>

@@ -29,10 +29,10 @@ Their shortened forms.
         </tr>
       </thead>
       <tbody>
-        <% for(let url in urls) { %>
+        <% for(let url in userUrls) { %>
           <tr>
             <td><a href="/u/<%= url %>"><%= url %></a></td>
-            <td><%= urls[url].longURL %></td>
+            <td><%= userUrls[url].longURL %></td>
 
             <!-- edit Button -->
             <td>
