@@ -13,7 +13,7 @@
   <% if (users[userID]) { %> 
 
     <div id="logoutOption">
-      <form action="/logout" class="form-inline" method="POST">
+      <form action="/login/logout" class="form-inline" method="POST">
         <div class="form-group mb-2">
           <label for="logout">Logged in as <%= users[userID].email %>! </label>
           <button name="logout" type="submit" class="btn btn-outline-dark" style="margin: 1em">logout</button>
