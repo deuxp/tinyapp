@@ -16,6 +16,8 @@ For educational purposes at Lighthouse Labs. Do not use for production code.
 2. Run the server: In your terminal, from the tiny App folder type: `npm start`
 3. From your browser visit [http://localhost:8080/urls](http://localhost:8080/urls) to begin
 4. register an account
-  ![registration page](https://imgur.com/V2nyH6w)
-5. Add a url to your dashboard
+  ![registration page](https://i.imgur.com/V2nyH6w.png)
+5. Create a new url to add it to your dashboard
+  ![registration page](https://i.imgur.com/CYlG4vz.png)
+  ![registration page](https://i.imgur.com/EqLwmb6.png)
 6. Now you can create tiny alias for your links. Copy and paste the short link to use where ever you like!
