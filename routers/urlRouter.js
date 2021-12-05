@@ -5,7 +5,6 @@ const {
   myShortUrls,
   myLongUrls,
   myDatabase,
-  shortFromLong,
   generateRandomString
 } = require('../helpers');
 
@@ -57,10 +56,7 @@ const urlRouter = (urlDatabase, users) => {
       urlDatabase[serial] = { longURL, userID };
       return res.redirect(`/urls/${serial}`);
     }
-    // if long url exists; redirect edit page
-    const shortList = myDatabase(urlDatabase, myShortUrls, userID);
-    const short = shortFromLong(shortList, longURL);
-    res.redirect(`/urls/${short}`);
+    res.redirect(`/urls/`);
   });
 
   //////////////////

@@ -2,7 +2,6 @@ const {
   myShortUrls,
   myLongUrls,
   myDatabase,
-  shortFromLong,
   getUserByEmail,
 } = require('../helpers');
 const { assert, expect, should } = require("chai");
@@ -76,22 +75,6 @@ describe('#myDatabase', () => {
   it('should not have a propery "kj34gd"', () => {
     const db = myDatabase(userUrls, myShortUrls, 'ff0f9d');
     expect(db).to.not.have.property('kj34gd');
-  });
-
-});
-
-describe('#shortFromLong', () => {
-  it('should return "f3f2a9"', () => {
-    const short = shortFromLong(userUrls, 'http://www.github.io');
-    expect(short).to.equal('f3f2a9');
-  });
-  it('should return "kj34gd"', () => {
-    const short = shortFromLong(userUrls, 'http://www.myspace.com');
-    expect(short).to.equal('kj34gd');
-  });
-  it('should not return "4d38ba"', () => {
-    const short = shortFromLong(userUrls, 'http://www.wikipedia.org');
-    expect(short).to.not.equal('4d38ba');
   });
 
 });

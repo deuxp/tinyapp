@@ -63,23 +63,6 @@ const myDatabase = (obj, cb, id) => {
 
 /**
  * ------------------------------------------------------------
- * @param {object} obj - user specific URLs database from the function: [myDatabase]
- * @param {string} longA - full web address
- * @returns short URL associated with the long URL [key from value]
- * ------------------------------------------------------------
- */
-const shortFromLong = (obj, longA) => {
-  for (const key in obj) {
-    if (Object.hasOwnProperty.call(obj, key)) {
-      const longB = obj[key].longURL;
-      if (longA === longB) return key;
-    }
-  }
-};
-
-
-/**
- * ------------------------------------------------------------
  * @param {object} database - the full database of users
  * @param {string} email - a user's login email address
  * @returns An Object: the user profile associated with the email.
@@ -104,7 +87,6 @@ module.exports = {
   myShortUrls,
   myLongUrls,
   myDatabase,
-  shortFromLong,
   getUserByEmail,
   generateRandomString
 };

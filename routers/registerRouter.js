@@ -38,7 +38,7 @@ const registerRouter = users => {
     res.redirect('/urls');
   });
 
-  return router
+  return router;
 };
 
 
