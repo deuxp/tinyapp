@@ -2,9 +2,9 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
-const loginRouter = require('./routers/loginRouter')
-const urlRouter = require('./routers/urlRouter')
-const registerRouter = require('./routers/registerRouter')
+const loginRouter = require('./routers/loginRouter');
+const urlRouter = require('./routers/urlRouter');
+const registerRouter = require('./routers/registerRouter');
 
 const port = 8080;
 const app = express();
@@ -24,9 +24,9 @@ app.use(cookieSession({
 // Route Handlers //
 ////////////////////
 
-app.use('/register', registerRouter(users))
-app.use('/login', loginRouter(users))
-app.use('/urls', urlRouter(urlDatabase, users))
+app.use('/register', registerRouter(users));
+app.use('/login', loginRouter(users));
+app.use('/urls', urlRouter(urlDatabase, users));
 
 // //////////////////////////////////////
 // // GET: redirect to queried website //
