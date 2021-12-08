@@ -15,16 +15,13 @@ const registerRouter = users => {
   router.post('/', (req, res) => {
     const { email, password } = req.body;
     if (!email) {
-      res.status(400);
-      return res.send(`you must enter a valid email`);
+      return res.status(400).send(`<h1>Status ${res.statusCode}: you must enter a valid email<h1>`);
     }
     if (!password) {
-      res.status(400);
-      return res.send(`you must enter a valid password`);
+      return res.status(400).send(`<h1>Status ${res.statusCode}: you must enter a valid password<h1>`);
     }
     if (getUserByEmail(users, email)) {
-      res.status(400);
-      return res.send(`User already exists`);
+      return res.status(400).send(`<h1>Status ${res.statusCode}: User already exists<h1>`);
     }
     const userID = generateRandomString();
     const hashPasswd = bcrypt.hashSync(password, saltRounds);
