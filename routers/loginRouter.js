@@ -4,12 +4,20 @@ const bcrypt = require('bcrypt');
 const { getUserByEmail } = require('../helpers');
 
 const loginRouter = users => {
+
+  /////////////////////
+  // GET: Login Page //
+  /////////////////////
   
   router.get('/', (req,res) => {
     const { userID } = req.session;
     const templateVars = { users, userID };
     res.render('login', templateVars);
   });
+
+  /////////////////////////
+  // POST: Login attempt //
+  /////////////////////////
 
   router.post('/', (req,res) => {
     const { email, password } = req.body;
@@ -28,7 +36,10 @@ const loginRouter = users => {
     res.status(403).send(`<h1>Status ${res.statusCode}: password not correct<h1>`);
   });
 
-  // CLEAR COOKIE
+  ///////////////////
+  // CLEAR: Cookie //
+  ///////////////////
+
   router.post('/logout', (req, res) => {
     req.session.userID = null;
     res.redirect('/urls');
