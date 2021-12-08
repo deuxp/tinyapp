@@ -92,6 +92,10 @@ const urlRouter = (urlDatabase, users) => {
     res.redirect('/urls');
   });
 
+  //////////////////////////
+  // Get: Show working URL//
+  //////////////////////////
+
   router.get('/:shortURL', (req, res) => {
     const { userID } = req.session;
     const { shortURL } = req.params;
