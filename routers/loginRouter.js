@@ -25,7 +25,7 @@ const loginRouter = users => {
     
     // if email not found
     if (!userID) {
-      return res.status(403).send(`<h1>Status ${res.statusCode}: Please Register<h1>`);
+      return res.status(403).send(`<h1>Status ${res.statusCode}: Please Register</h1>`);
     }
     // Password Check
     const verified = bcrypt.compareSync(password, users[userID].password);
@@ -33,7 +33,7 @@ const loginRouter = users => {
       req.session.userID = userID;
       return res.redirect('/urls');
     }
-    res.status(403).send(`<h1>Status ${res.statusCode}: password not correct<h1>`);
+    res.status(403).send(`<h1>Status ${res.statusCode}: password not correct</h1>`);
   });
 
   ///////////////////
